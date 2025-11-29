@@ -4,37 +4,51 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
+// Contexto de tema
+import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
+
 // Importação das telas
 import HomeScreen from './src/screens/HomeScreen';
 import AlarmsScreen from './src/screens/AlarmsScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import HistoryScreen from './src/screens/HistoryScreen';
 
-// Cores do tema escuro
-const COLORS = {
-  background: '#121212',
-  card: '#1E1E1E',
-  primary: '#BB86FC',
-  textPrimary: '#FFFFFF',
-  textSecondary: '#B3B3B3',
-};
-
 const Tab = createBottomTabNavigator();
 
-export default function App() {
+function AppContent() {
+  const { colors, isDark } = useTheme();
+
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <NavigationContainer
         theme={{
-          dark: true,
+          dark: isDark,
           colors: {
-            primary: COLORS.primary,
-            background: COLORS.background,
-            card: COLORS.card,
-            text: COLORS.textPrimary,
-            border: COLORS.card,
-            notification: COLORS.primary,
+            primary: colors.primary,
+            background: colors.background,
+            card: colors.card,
+            text: colors.textPrimary,
+            border: colors.border,
+            notification: colors.primary,
+          },
+          fonts: {
+            regular: {
+              fontFamily: 'System',
+              fontWeight: '400',
+            },
+            medium: {
+              fontFamily: 'System',
+              fontWeight: '500',
+            },
+            bold: {
+              fontFamily: 'System',
+              fontWeight: '700',
+            },
+            heavy: {
+              fontFamily: 'System',
+              fontWeight: '800',
+            },
           },
         }}
       >
@@ -62,11 +76,11 @@ export default function App() {
 
               return <Ionicons name={iconName} size={size} color={color} />;
             },
-            tabBarActiveTintColor: COLORS.primary,
-            tabBarInactiveTintColor: COLORS.textSecondary,
+            tabBarActiveTintColor: colors.primary,
+            tabBarInactiveTintColor: colors.textSecondary,
             tabBarStyle: {
-              backgroundColor: COLORS.card,
-              borderTopColor: COLORS.background,
+              backgroundColor: colors.card,
+              borderTopColor: colors.border,
               paddingBottom: 5,
               paddingTop: 5,
               height: 60,
@@ -75,9 +89,9 @@ export default function App() {
               fontSize: 12,
             },
             headerStyle: {
-              backgroundColor: COLORS.card,
+              backgroundColor: colors.card,
             },
-            headerTintColor: COLORS.textPrimary,
+            headerTintColor: colors.textPrimary,
             headerTitleStyle: {
               fontWeight: '600',
             },
@@ -95,17 +109,25 @@ export default function App() {
             options={{ title: 'Alarmes' }}
           />
           <Tab.Screen
-            name="Config"
-            component={SettingsScreen}
-            options={{ title: 'Config' }}
-          />
-          <Tab.Screen
             name="Histórico"
             component={HistoryScreen}
             options={{ title: 'Histórico' }}
           />
+          <Tab.Screen
+            name="Config"
+            component={SettingsScreen}
+            options={{ title: 'Config' }}
+          />
         </Tab.Navigator>
       </NavigationContainer>
     </>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }

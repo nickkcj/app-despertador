@@ -1,6 +1,8 @@
 import axios from 'axios';
 
 
+// Para emulador Android use: 'http://10.0.2.2:3000'
+// Para dispositivo físico use o IP da sua máquina
 export const BASE_URL = 'http://192.168.1.3:3000';
 
 // ID do dispositivo ESP32

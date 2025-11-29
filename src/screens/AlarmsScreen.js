@@ -10,23 +10,14 @@ import {
   Alert,
   RefreshControl,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import api, { DEVICE_ID } from '../services/api';
-
-// Cores do tema escuro
-const COLORS = {
-  background: '#121212',
-  card: '#1E1E1E',
-  primary: '#BB86FC',
-  textPrimary: '#FFFFFF',
-  textSecondary: '#B3B3B3',
-  success: '#03DAC6',
-  warning: '#CF6679',
-  inputBg: '#2C2C2C',
-};
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function AlarmsScreen() {
+  const { colors } = useTheme();
   const [alarms, setAlarms] = useState([]);
   const [lightThreshold, setLightThreshold] = useState(300);
   const [newAlarm, setNewAlarm] = useState('');
@@ -44,7 +35,7 @@ export default function AlarmsScreen() {
         setLightThreshold(response.data.data.lightThreshold || 300);
       }
     } catch (err) {
-      setError('Não foi possível carregar os alarmes');
+      setError('Nao foi possivel carregar os alarmes');
       console.error(err);
     } finally {
       setLoading(false);
@@ -64,13 +55,11 @@ export default function AlarmsScreen() {
     fetchConfig();
   };
 
-  // Valida formato HH:MM (00:00 a 23:59)
   const isValidTime = (time) => {
     const regex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
     return regex.test(time);
   };
 
-  // Formata para HH:MM (adiciona zero à esquerda se necessário)
   const formatTime = (time) => {
     const [hours, minutes] = time.split(':');
     return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
@@ -88,7 +77,7 @@ export default function AlarmsScreen() {
         return true;
       }
     } catch (err) {
-      Alert.alert('Erro', 'Não foi possível salvar os alarmes');
+      Alert.alert('Erro', 'Nao foi possivel salvar os alarmes');
       console.error(err);
       return false;
     } finally {
@@ -98,19 +87,19 @@ export default function AlarmsScreen() {
 
   const addAlarm = async () => {
     if (!newAlarm.trim()) {
-      Alert.alert('Atenção', 'Digite um horário');
+      Alert.alert('Atencao', 'Digite um horario');
       return;
     }
 
     if (!isValidTime(newAlarm)) {
-      Alert.alert('Formato inválido', 'Use o formato HH:MM (ex: 07:30)');
+      Alert.alert('Formato invalido', 'Use o formato HH:MM (ex: 07:30)');
       return;
     }
 
     const formattedTime = formatTime(newAlarm);
 
     if (alarms.includes(formattedTime)) {
-      Alert.alert('Atenção', 'Este alarme já está configurado');
+      Alert.alert('Atencao', 'Este alarme ja esta configurado');
       return;
     }
 
@@ -144,10 +133,128 @@ export default function AlarmsScreen() {
     );
   };
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+      padding: 20,
+    },
+    centered: {
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: 'bold',
+      color: colors.textPrimary,
+      marginBottom: 4,
+    },
+    subtitle: {
+      fontSize: 16,
+      color: colors.textSecondary,
+      marginBottom: 20,
+    },
+    inputContainer: {
+      flexDirection: 'row',
+      marginBottom: 20,
+    },
+    input: {
+      flex: 1,
+      backgroundColor: colors.inputBg,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      fontSize: 18,
+      color: colors.textPrimary,
+      marginRight: 12,
+    },
+    addButton: {
+      backgroundColor: colors.primary,
+      width: 56,
+      height: 56,
+      borderRadius: 12,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    buttonDisabled: {
+      opacity: 0.6,
+    },
+    alarmItem: {
+      backgroundColor: colors.card,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 12,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    alarmInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    alarmTime: {
+      fontSize: 24,
+      fontWeight: '600',
+      color: colors.textPrimary,
+      marginLeft: 12,
+    },
+    deleteButton: {
+      padding: 8,
+    },
+    emptyContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 60,
+    },
+    emptyList: {
+      flexGrow: 1,
+      justifyContent: 'center',
+    },
+    emptyText: {
+      fontSize: 18,
+      color: colors.textSecondary,
+      marginTop: 16,
+    },
+    emptySubtext: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginTop: 8,
+    },
+    loadingText: {
+      marginTop: 16,
+      color: colors.textSecondary,
+      fontSize: 16,
+    },
+    errorBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.dark ? 'rgba(207, 102, 121, 0.2)' : 'rgba(211, 47, 47, 0.1)',
+      padding: 12,
+      borderRadius: 8,
+      marginBottom: 16,
+    },
+    errorText: {
+      color: colors.warning,
+      fontSize: 14,
+      marginLeft: 8,
+    },
+    footer: {
+      color: colors.textSecondary,
+      fontSize: 14,
+      textAlign: 'center',
+      paddingVertical: 12,
+    },
+  });
+
   const renderAlarmItem = ({ item }) => (
     <View style={styles.alarmItem}>
       <View style={styles.alarmInfo}>
-        <Ionicons name="alarm-outline" size={24} color={COLORS.primary} />
+        <Ionicons name="alarm-outline" size={24} color={colors.primary} />
         <Text style={styles.alarmTime}>{item}</Text>
       </View>
       <TouchableOpacity
@@ -155,41 +262,40 @@ export default function AlarmsScreen() {
         onPress={() => removeAlarm(item)}
         disabled={saving}
       >
-        <Ionicons name="trash-outline" size={22} color={COLORS.warning} />
+        <Ionicons name="trash-outline" size={22} color={colors.warning} />
       </TouchableOpacity>
     </View>
   );
 
   const renderEmptyList = () => (
     <View style={styles.emptyContainer}>
-      <Ionicons name="alarm-outline" size={64} color={COLORS.textSecondary} />
+      <Ionicons name="alarm-outline" size={64} color={colors.textSecondary} />
       <Text style={styles.emptyText}>Nenhum alarme configurado</Text>
       <Text style={styles.emptySubtext}>
-        Adicione um horário no campo acima
+        Adicione um horario no campo acima
       </Text>
     </View>
   );
 
   if (loading && !refreshing) {
     return (
-      <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
+      <SafeAreaView style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.loadingText}>Carregando alarmes...</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Alarmes</Text>
-      <Text style={styles.subtitle}>Gerencie seus horários</Text>
+      <Text style={styles.subtitle}>Gerencie seus horarios</Text>
 
-      {/* Input para adicionar alarme */}
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
           placeholder="HH:MM (ex: 07:30)"
-          placeholderTextColor={COLORS.textSecondary}
+          placeholderTextColor={colors.textSecondary}
           value={newAlarm}
           onChangeText={setNewAlarm}
           keyboardType="numbers-and-punctuation"
@@ -202,21 +308,20 @@ export default function AlarmsScreen() {
           disabled={saving}
         >
           {saving ? (
-            <ActivityIndicator size="small" color={COLORS.background} />
+            <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
-            <Ionicons name="add" size={28} color={COLORS.background} />
+            <Ionicons name="add" size={28} color="#FFFFFF" />
           )}
         </TouchableOpacity>
       </View>
 
       {error && (
         <View style={styles.errorBanner}>
-          <Ionicons name="warning" size={16} color={COLORS.warning} />
+          <Ionicons name="warning" size={16} color={colors.warning} />
           <Text style={styles.errorText}>{error}</Text>
         </View>
       )}
 
-      {/* Lista de alarmes */}
       <FlatList
         data={alarms}
         keyExtractor={(item, index) => `${item}-${index}`}
@@ -227,8 +332,8 @@ export default function AlarmsScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={COLORS.primary}
-            colors={[COLORS.primary]}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
           />
         }
       />
@@ -236,119 +341,6 @@ export default function AlarmsScreen() {
       <Text style={styles.footer}>
         {alarms.length} alarme(s) configurado(s)
       </Text>
-    </View>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    padding: 20,
-  },
-  centered: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: COLORS.textPrimary,
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    marginBottom: 20,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    marginBottom: 20,
-  },
-  input: {
-    flex: 1,
-    backgroundColor: COLORS.inputBg,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 18,
-    color: COLORS.textPrimary,
-    marginRight: 12,
-  },
-  addButton: {
-    backgroundColor: COLORS.primary,
-    width: 56,
-    height: 56,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  alarmItem: {
-    backgroundColor: COLORS.card,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  alarmInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  alarmTime: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginLeft: 12,
-  },
-  deleteButton: {
-    padding: 8,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-  },
-  emptyList: {
-    flexGrow: 1,
-    justifyContent: 'center',
-  },
-  emptyText: {
-    fontSize: 18,
-    color: COLORS.textSecondary,
-    marginTop: 16,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    marginTop: 8,
-  },
-  loadingText: {
-    marginTop: 16,
-    color: COLORS.textSecondary,
-    fontSize: 16,
-  },
-  errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(207, 102, 121, 0.2)',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  errorText: {
-    color: COLORS.warning,
-    fontSize: 14,
-    marginLeft: 8,
-  },
-  footer: {
-    color: COLORS.textSecondary,
-    fontSize: 14,
-    textAlign: 'center',
-    paddingVertical: 12,
-  },
-});
