@@ -60,6 +60,8 @@ export default function AlarmsScreen() {
     return regex.test(time);
   };
 
+  const getTimeString = (alarm) => typeof alarm === 'string' ? alarm : alarm.time;
+
   const formatTime = (time) => {
     const [hours, minutes] = time.split(':');
     return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
@@ -98,14 +100,14 @@ export default function AlarmsScreen() {
 
     const formattedTime = formatTime(newAlarm);
 
-    if (alarms.includes(formattedTime)) {
+    if (alarms.some(a => getTimeString(a) === formattedTime)) {
       Alert.alert('Atencao', 'Este alarme ja esta configurado');
       return;
     }
 
     const newAlarmsList = [...alarms, formattedTime].sort((a, b) => {
-      const [aH, aM] = a.split(':').map(Number);
-      const [bH, bM] = b.split(':').map(Number);
+      const [aH, aM] = getTimeString(a).split(':').map(Number);
+      const [bH, bM] = getTimeString(b).split(':').map(Number);
       return aH * 60 + aM - (bH * 60 + bM);
     });
 
@@ -116,16 +118,17 @@ export default function AlarmsScreen() {
   };
 
   const removeAlarm = (alarmToRemove) => {
+    const timeToRemove = getTimeString(alarmToRemove);
     Alert.alert(
       'Remover Alarme',
-      `Deseja remover o alarme das ${alarmToRemove}?`,
+      `Deseja remover o alarme das ${timeToRemove}?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Remover',
           style: 'destructive',
           onPress: async () => {
-            const newAlarmsList = alarms.filter((a) => a !== alarmToRemove);
+            const newAlarmsList = alarms.filter((a) => getTimeString(a) !== timeToRemove);
             await saveAlarms(newAlarmsList);
           },
         },
@@ -255,7 +258,7 @@ export default function AlarmsScreen() {
     <View style={styles.alarmItem}>
       <View style={styles.alarmInfo}>
         <Ionicons name="alarm-outline" size={24} color={colors.primary} />
-        <Text style={styles.alarmTime}>{item}</Text>
+        <Text style={styles.alarmTime}>{getTimeString(item)}</Text>
       </View>
       <TouchableOpacity
         style={styles.deleteButton}
@@ -324,7 +327,7 @@ export default function AlarmsScreen() {
 
       <FlatList
         data={alarms}
-        keyExtractor={(item, index) => `${item}-${index}`}
+        keyExtractor={(item, index) => `${getTimeString(item)}-${index}`}
         renderItem={renderAlarmItem}
         ListEmptyComponent={renderEmptyList}
         contentContainerStyle={alarms.length === 0 ? styles.emptyList : null}

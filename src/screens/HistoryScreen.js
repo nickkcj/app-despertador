@@ -260,26 +260,26 @@ export default function HistoryScreen() {
         <View style={styles.logRow}>
           <View style={styles.logItem}>
             <Ionicons
-              name={item.servoOpened ? 'sunny' : 'moon-outline'}
+              name={item.ledOn ? 'bulb-outline' : 'bulb'}
               size={20}
-              color={item.servoOpened ? colors.success : colors.textSecondary}
+              color={item.ledOn ? colors.textSecondary : colors.success}
             />
-            <Text style={styles.logLabel}>Persiana</Text>
+            <Text style={styles.logLabel}>Luz</Text>
           </View>
           <View style={styles.statusBadge}>
             <View
               style={[
                 styles.statusDot,
-                { backgroundColor: item.servoOpened ? colors.success : colors.textSecondary },
+                { backgroundColor: item.ledOn ? colors.textSecondary : colors.success },
               ]}
             />
             <Text
               style={[
                 styles.statusText,
-                { color: item.servoOpened ? colors.success : colors.textSecondary },
+                { color: item.ledOn ? colors.textSecondary : colors.success },
               ]}
             >
-              {item.servoOpened ? 'Aberta' : 'Fechada'}
+              {item.ledOn ? 'Apagada' : 'Acesa'}
             </Text>
           </View>
         </View>

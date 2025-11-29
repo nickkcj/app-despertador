@@ -19,7 +19,7 @@ import api, { DEVICE_ID } from '../services/api';
 import { useTheme } from '../contexts/ThemeContext';
 
 const MIN_THRESHOLD = 0;
-const MAX_THRESHOLD = 4095;
+const MAX_THRESHOLD = 1023;
 
 export default function SettingsScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
@@ -366,7 +366,7 @@ export default function SettingsScreen() {
 
           <Text style={styles.description}>
             Quando o sensor detectar um valor de luz menor que o limiar configurado,
-            a persiana sera aberta automaticamente junto com o alarme.
+            a luz sera acesa automaticamente junto com o alarme.
           </Text>
 
           <View style={styles.valueContainer}>
@@ -402,8 +402,8 @@ export default function SettingsScreen() {
 
           <View style={styles.indicatorContainer}>
             <View style={styles.indicatorItem}>
-              <Ionicons name="moon" size={20} color={colors.textSecondary} />
-              <Text style={styles.indicatorText}>Escuro</Text>
+              <Ionicons name="sunny" size={20} color={colors.success} />
+              <Text style={styles.indicatorText}>Claro</Text>
             </View>
             <View style={styles.indicatorBar}>
               <View
@@ -414,8 +414,8 @@ export default function SettingsScreen() {
               />
             </View>
             <View style={styles.indicatorItem}>
-              <Ionicons name="sunny" size={20} color={colors.success} />
-              <Text style={styles.indicatorText}>Claro</Text>
+              <Ionicons name="moon" size={20} color={colors.textSecondary} />
+              <Text style={styles.indicatorText}>Escuro</Text>
             </View>
           </View>
 
@@ -427,8 +427,8 @@ export default function SettingsScreen() {
         <View style={styles.infoCard}>
           <Ionicons name="information-circle" size={20} color={colors.primary} />
           <Text style={styles.infoText}>
-            O ESP32 possui um ADC de 12 bits, portanto os valores variam de 0 (escuro total)
-            ate 4095 (luz maxima). Valores tipicos para ambientes internos ficam entre 100-500.
+            O sensor de luminosidade retorna valores de 0 (luz maxima) ate 1023 (escuro total).
+            Valores tipicos para ambientes internos ficam entre 500-900.
           </Text>
         </View>
 

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,9 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const [stopping, setStopping] = useState(false);
+  const [ringing, setRinging] = useState(false);
+  const pollingRef = useRef(null);
 
   const fetchConfig = async () => {
     try {
@@ -49,6 +52,38 @@ export default function HomeScreen() {
     fetchConfig();
   };
 
+  const fetchStatus = async () => {
+    try {
+      const response = await api.get(`/api/alarm/${DEVICE_ID}/status`);
+      if (response.data.success) {
+        setRinging(response.data.data.ringing);
+      }
+    } catch (err) {
+      // silently fail
+    }
+  };
+
+  useEffect(() => {
+    fetchStatus();
+    pollingRef.current = setInterval(fetchStatus, 2000);
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+      }
+    };
+  }, []);
+
+  const stopAlarm = async () => {
+    setStopping(true);
+    try {
+      await api.post(`/api/alarm/${DEVICE_ID}/stop`);
+    } catch (err) {
+      console.error('Erro ao parar alarme:', err);
+    } finally {
+      setStopping(false);
+    }
+  };
+
   const getNextAlarm = () => {
     if (!config || !config.alarms || config.alarms.length === 0) {
       return 'Nenhum alarme configurado';
@@ -57,21 +92,24 @@ export default function HomeScreen() {
     const now = new Date();
     const currentTime = now.getHours() * 60 + now.getMinutes();
 
+    const getTimeString = (alarm) => typeof alarm === 'string' ? alarm : alarm.time;
+
     const sortedAlarms = [...config.alarms].sort((a, b) => {
-      const [aH, aM] = a.split(':').map(Number);
-      const [bH, bM] = b.split(':').map(Number);
+      const [aH, aM] = getTimeString(a).split(':').map(Number);
+      const [bH, bM] = getTimeString(b).split(':').map(Number);
       return aH * 60 + aM - (bH * 60 + bM);
     });
 
     for (const alarm of sortedAlarms) {
-      const [hours, minutes] = alarm.split(':').map(Number);
+      const timeStr = getTimeString(alarm);
+      const [hours, minutes] = timeStr.split(':').map(Number);
       const alarmTime = hours * 60 + minutes;
       if (alarmTime > currentTime) {
-        return alarm;
+        return timeStr;
       }
     }
 
-    return sortedAlarms[0] + ' (amanha)';
+    return getTimeString(sortedAlarms[0]) + ' (amanha)';
   };
 
   const formatDate = (dateString) => {
@@ -182,6 +220,21 @@ export default function HomeScreen() {
       textAlign: 'center',
       marginTop: 8,
     },
+    stopButton: {
+      backgroundColor: colors.warning,
+      borderRadius: 12,
+      padding: 20,
+      marginBottom: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    stopButtonText: {
+      color: '#FFFFFF',
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginLeft: 10,
+    },
   });
 
   if (loading && !refreshing) {
@@ -221,6 +274,23 @@ export default function HomeScreen() {
         <Text style={styles.title}>Despertador Inteligente</Text>
         <Text style={styles.subtitle}>Dashboard</Text>
 
+        {ringing && (
+          <TouchableOpacity
+            style={styles.stopButton}
+            onPress={stopAlarm}
+            disabled={stopping}
+          >
+            {stopping ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Ionicons name="stop-circle" size={28} color="#FFFFFF" />
+            )}
+            <Text style={styles.stopButtonText}>
+              {stopping ? 'Parando...' : 'Parar Despertador'}
+            </Text>
+          </TouchableOpacity>
+        )}
+
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <Ionicons name="alarm" size={24} color={colors.primary} />
@@ -241,7 +311,7 @@ export default function HomeScreen() {
             {config?.lightThreshold ?? '-'}
           </Text>
           <Text style={styles.cardSubtext}>
-            Se luz {'<'} {config?.lightThreshold ?? '-'}, persiana abre
+            Se luz {'<'} {config?.lightThreshold ?? '-'}, luz acende
           </Text>
         </View>
 
