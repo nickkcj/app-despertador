@@ -59,7 +59,7 @@ export default function HomeScreen() {
         setRinging(response.data.data.ringing);
       }
     } catch (err) {
-      // silently fail
+      console.error('Erro ao buscar status do alarme:', err);
     }
   };
 
